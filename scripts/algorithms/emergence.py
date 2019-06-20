@@ -36,7 +36,7 @@ class Emergence(object):
 
         diff_periods = (term_end_week - term_start_week + 1) / self.NUM_WEEKS_PER_PERIOD
 
-        if ceil(diff_periods) < self.NUM_PERIODS:
+        if ceil(diff_periods) < 2:
             return False
 
         return True

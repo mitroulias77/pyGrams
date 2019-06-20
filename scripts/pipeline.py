@@ -11,7 +11,7 @@ import scripts.utils.date_utils
 from scripts.algorithms.emergence import Emergence
 from scripts.documents_filter import DocumentsFilter
 from scripts.filter_terms import FilterTerms
-from scripts.text_processing import LemmaTokenizer, WordAnalyzer, lowercase_strip_accents_and_ownership
+from scripts.text_processing import StemTokenizer, LemmaTokenizer, WordAnalyzer, lowercase_strip_accents_and_ownership
 from scripts.tfidf_mask import TfidfMask
 from scripts.tfidf_reduce import TfidfReduce
 from scripts.tfidf_wrapper import tfidf_subset_from_features, tfidf_from_text
@@ -26,6 +26,7 @@ class Pipeline(object):
                  term_counts=False, pickled_tfidf_folder_name=None, max_df=0.1, user_ngrams=None, prefilter_terms=0,
                  terms_threshold=None, output_name=None, emerging_technology=None):
 
+        tokenizer = StemTokenizer()
         # load data
         self.__data_filename = data_filename
         self.__date_dict = docs_mask_dict['date']
@@ -42,7 +43,7 @@ class Pipeline(object):
             self.__tfidf_obj = tfidf_from_text(text_series=dataframe[text_header],
                                                ngram_range=ngram_range,
                                                max_document_frequency=max_df,
-                                               tokenizer=LemmaTokenizer())
+                                               tokenizer=tokenizer)
             tfidf_mask_obj = TfidfMask(self.__tfidf_obj, ngram_range=ngram_range, uni_factor=0.8, unbias=True)
             self.__tfidf_obj.apply_weights(tfidf_mask_obj.tfidf_mask)
 
@@ -93,7 +94,7 @@ class Pipeline(object):
                       f'to {max_date // 100}-{(max_date % 100):02d}')
 
             WordAnalyzer.init(
-                tokenizer=LemmaTokenizer(),
+                tokenizer=tokenizer,
                 preprocess=lowercase_strip_accents_and_ownership,
                 ngram_range=ngram_range)
 
@@ -223,7 +224,7 @@ class PipelineEmtech(object):
         self.__emergent = [x[0] for x in self.__emergence_list[:nterms]]
         self.__declining = [x[0] for x in self.__emergence_list[-nterms:]]
 
-        zero_pivot_emergence = None
+        zero_pivot_emergence = 1
         last_emergence = self.__emergence_list[0][1]
 
         for index, value in enumerate(self.__emergence_list[1:]):
